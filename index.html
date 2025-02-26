@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Input Groups</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            background: url('football-bg.webp') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .input-container, .output-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .column {
+            width: 48%;
+            min-width: 200px;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .button-img {
+            cursor: pointer;
+            width: 50px;
+            margin: 10px;
+        }
+        #processing {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff5733;
+            display: none;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        .blink {
+            animation: blink 1s infinite;
+        }
+        @media (max-width: 600px) {
+            .column { width: 100%; }
+            .output-container { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Ubacite imena</h2>
+        <div class="input-container" id="inputs"></div>
+        <img src="reset.jpg" class="button-img" onclick="resetData()" alt="Reset">
+        <img src="ball.jpg" class="button-img" onclick="zamish()" alt="Zamish">
+        <p id="processing" class="blink">Zamisavan najboje sta znan...</p>
+        <div class="output-container">
+            <div class="column">
+                <h3>White</h3>
+                <ul id="white-list"></ul>
+            </div>
+            <div class="column">
+                <h3>Black</h3>
+                <ul id="black-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputCount = 12;
+        const inputsDiv = document.getElementById("inputs");
+        
+        function loadInputs() {
+            let leftColumn = document.createElement("div");
+            let rightColumn = document.createElement("div");
+            leftColumn.classList.add("column");
+            rightColumn.classList.add("column");
+
+            for (let i = 0; i < inputCount; i++) {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.id = `input${i}`;
+                input.value = localStorage.getItem(`input${i}`) || "";
+                input.oninput = () => localStorage.setItem(`input${i}`, input.value);
+                
+                (i < 6 ? leftColumn : rightColumn).appendChild(input);
+                (i < 6 ? leftColumn : rightColumn).appendChild(document.createElement("br"));
+            }
+            
+            inputsDiv.appendChild(leftColumn);
+            inputsDiv.appendChild(rightColumn);
+        }
+        
+        function resetData() {
+            for (let i = 0; i < inputCount; i++) {
+                localStorage.removeItem(`input${i}`);
+                document.getElementById(`input${i}`).value = "";
+            }
+        }
+        
+        function zamish() {
+            let names = [];
+            for (let i = 0; i < inputCount; i++) {
+                let value = document.getElementById(`input${i}`).value.trim();
+                if (value) names.push(value);
+            }
+            
+            let processingText = document.getElementById("processing");
+            processingText.style.display = "block";
+            processingText.classList.add("blink");
+            let iterations = 10;
+            function shuffleAndDisplay(count) {
+                if (count === 0) {
+                    processingText.style.display = "none";
+                    return;
+                }
+                let shuffled = names.sort(() => 0.5 - Math.random());
+                let half = Math.ceil(shuffled.length / 2);
+                document.getElementById("white-list").innerHTML = shuffled.slice(0, half).map(name => `<li>${name}</li>`).join("");
+                document.getElementById("black-list").innerHTML = shuffled.slice(half).map(name => `<li>${name}</li>`).join("");
+                setTimeout(() => shuffleAndDisplay(count - 1), 1000);
+            }
+            shuffleAndDisplay(iterations);
+        }
+        
+        loadInputs();
+    </script>
+</body>
+</html>
