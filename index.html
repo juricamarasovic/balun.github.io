@@ -4,8 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Input Groups</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBEWWQf9imMX7OBC4ON0Kl_e3wKDmxEIfM",
+            authDomain: "balun-5ad4b.firebaseapp.com",
+            projectId: "balun-5ad4b",
+            storageBucket: "balun-5ad4b.firebasestorage.app",
+            messagingSenderId: "194034453582",
+            appId: "1:194034453582:web:973d2bfddc9afcc685c71f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            loadInputs();
+        });
+        
+        const inputCount = 12;
+        const inputsDiv = document.getElementById("inputs");
+        
+        function loadInputs() {
+            let leftColumn = document.createElement("div");
+            let rightColumn = document.createElement("div");
+            leftColumn.classList.add("column");
+            rightColumn.classList.add("column");
+
+            for (let i = 0; i < inputCount; i++) {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.id = `input${i}`;
+                input.oninput = () => saveToFirestore(i, input.value);
+                (i < 6 ? leftColumn : rightColumn).appendChild(input);
+                (i < 6 ? leftColumn : rightColumn).appendChild(document.createElement("br"));
+            }
+            inputsDiv.appendChild(leftColumn);
+            inputsDiv.appendChild(rightColumn);
+            loadFromFirestore();
+        }
+        
+        async function saveToFirestore(index, value) {
+            await setDoc(doc(db, "inputs", `input${index}`), { value });
+        }
+        
+        async function loadFromFirestore() {
+            const querySnapshot = await getDocs(collection(db, "inputs"));
+            querySnapshot.forEach((doc) => {
+                const inputField = document.getElementById(doc.id);
+                if (inputField) inputField.value = doc.data().value;
+            });
+        }
+        
+        async function resetData() {
+            const querySnapshot = await getDocs(collection(db, "inputs"));
+            querySnapshot.forEach(async (doc) => {
+                await deleteDoc(doc.ref);
+            });
+            document.querySelectorAll("input").forEach(input => input.value = "");
+        }
+
+        function zamish() {
+            const inputs = [];
+            for (let i = 0; i < inputCount; i++) {
+                const value = document.getElementById(`input${i}`).value.trim();
+                if (value) inputs.push(value);
+            }
+            
+            if (inputs.length < 2) return;
+            
+            document.getElementById("processing").style.display = "block";
+            let iterations = 0;
+
+            function shuffleAndDisplay() {
+                const shuffled = inputs.sort(() => 0.5 - Math.random());
+                const half = Math.ceil(shuffled.length / 2);
+                document.getElementById("white-list").innerHTML = shuffled.slice(0, half).map(name => `<li>${name}</li>`).join("");
+                document.getElementById("black-list").innerHTML = shuffled.slice(half).map(name => `<li>${name}</li>`).join("");
+                iterations++;
+                if (iterations < 10) {
+                    setTimeout(shuffleAndDisplay, 1000);
+                } else {
+                    document.getElementById("processing").style.display = "none";
+                }
+            }
+            shuffleAndDisplay();
+        }
+	window.resetData = resetData;
+	window.zamish = zamish;	
+    </script>
     <style>
         body {
             font-family: 'Comic Sans MS', cursive, sans-serif;
@@ -90,67 +179,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-const firebaseConfig = {
-
-  apiKey: "AIzaSyBEWWQf9imMX7OBC4ON0Kl_e3wKDmxEIfM",
-  authDomain: "balun-5ad4b.firebaseapp.com",
-  projectId: "balun-5ad4b",
-  storageBucket: "balun-5ad4b.firebasestorage.app",
-  messagingSenderId: "194034453582",
-  appId: "1:194034453582:web:973d2bfddc9afcc685c71f"
-
-};
-
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const inputCount = 12;
-        const inputsDiv = document.getElementById("inputs");
-        
-        function loadInputs() {
-            let leftColumn = document.createElement("div");
-            let rightColumn = document.createElement("div");
-            leftColumn.classList.add("column");
-            rightColumn.classList.add("column");
-
-            for (let i = 0; i < inputCount; i++) {
-                const input = document.createElement("input");
-                input.type = "text";
-                input.id = `input${i}`;
-                input.oninput = () => saveToFirestore(i, input.value);
-                (i < 6 ? leftColumn : rightColumn).appendChild(input);
-                (i < 6 ? leftColumn : rightColumn).appendChild(document.createElement("br"));
-            }
-            inputsDiv.appendChild(leftColumn);
-            inputsDiv.appendChild(rightColumn);
-            loadFromFirestore();
-        }
-
-        function saveToFirestore(index, value) {
-            db.collection("inputs").doc(`input${index}`).set({ value });
-        }
-        
-        function loadFromFirestore() {
-            db.collection("inputs").get().then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    const inputField = document.getElementById(doc.id);
-                    if (inputField) inputField.value = doc.data().value;
-                });
-            });
-        }
-
-        function resetData() {
-            db.collection("inputs").get().then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    db.collection("inputs").doc(doc.id).delete();
-                });
-                document.querySelectorAll("input").forEach(input => input.value = "");
-            });
-        }
-        
-        loadInputs();
-    </script>
 </body>
 </html>
