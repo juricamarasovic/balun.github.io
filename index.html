@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Input Groups</title>
+    <title>Balun podjela</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -27,7 +27,10 @@
         
         const inputCount = 12;
         const inputsDiv = document.getElementById("inputs");
-        
+  
+		let whiteList = [];
+		let blackList = [];
+  
         function loadInputs() {
             let leftColumn = document.createElement("div");
             let rightColumn = document.createElement("div");
@@ -80,15 +83,23 @@
             
 			document.getElementById("inputs").style.display = "none";
 			document.getElementById("button-wrapper").style.display = "none";
-            document.getElementById("processing").style.display = "block";
-            let iterations = 0;
+			document.getElementById("processing").style.display = "block";
+			document.getElementById("white-list").innerHTML = "";
+			document.getElementById("black-list").innerHTML = "";
+			document.getElementById("back-to-input").style.display = "none";
 
+			const shuffled = inputs.sort(() => 0.5 - Math.random());
+			let iterations = 0;
+			
             function shuffleAndDisplay() {
                 const shuffled = inputs.sort(() => 0.5 - Math.random());
                 const half = Math.ceil(shuffled.length / 2);
-                document.getElementById("white-list").innerHTML = shuffled.slice(0, half).map(name => `<li>${name}</li>`).join("");
-                document.getElementById("black-list").innerHTML = shuffled.slice(half).map(name => `<li>${name}</li>`).join("");
-                iterations++;
+                whiteList = shuffled.slice(0, half);
+				blackList = shuffled.slice(half);
+                document.getElementById("white-list").innerHTML = whiteList.map(name => `<li>${name}</li>`).join("");
+                document.getElementById("black-list").innerHTML = blackList.map(name => `<li>${name}</li>`).join("");
+
+				iterations++;
                 if (iterations < 10) {
                     setTimeout(shuffleAndDisplay, 1000);
                 } else {
@@ -97,10 +108,64 @@
 					document.getElementById("inputs").style.display = "none";
 					document.getElementById("button-wrapper").style.display = "none";
 					document.getElementById("back-to-input").style.display = "block";
-                }
+					document.getElementById("white-list").innerHTML = "";
+					document.getElementById("black-list").innerHTML = "";
+					showReveal(0); // <- START the reveal sequence
+               }
             }
             shuffleAndDisplay();
-        }
+			
+			// Select unique reveal images for this run
+			const allRevealImages = Array.from({ length: 10 }, (_, i) => `reveal${i + 1}.jpg`);
+			const revealImages = allRevealImages.sort(() => 0.5 - Math.random()).slice(0, shuffled.length);
+			
+			    // Reveal sequence function
+			function showReveal(index) {
+				if (index >= shuffled.length) {
+					document.getElementById("reveal-container").style.display = "none";
+
+					const half = Math.ceil(shuffled.length / 2);
+					document.getElementById("white-list").innerHTML = shuffled.slice(0, half).map(name => `<li>${name}</li>`).join("");
+					document.getElementById("black-list").innerHTML = shuffled.slice(half).map(name => `<li>${name}</li>`).join("");
+
+					document.getElementById("back-to-input").style.display = "block";
+					return;
+				}
+				const name = shuffled[index];
+				const image = revealImages[index];
+				//const randomImg = images[Math.floor(Math.random() * images.length)];
+
+				const revealContainer = document.getElementById("reveal-container");
+				const revealImage = document.getElementById("reveal-image");
+				const revealName = document.getElementById("reveal-name");
+
+				revealImage.src = image;
+				revealName.textContent = name;
+				revealContainer.style.display = "block";
+				
+//				revealName.textContent = name;
+				// Reset all classes
+				revealName.className = "reveal-text";
+				
+				// Apply class based on group
+				if (whiteList.includes(name)) {
+					revealName.classList.add("reveal-white");
+				} else if (blackList.includes(name)) {
+					revealName.classList.add("reveal-black");
+				} else {
+					// Optional fallback style
+					revealName.style.color = "gray";
+					revealName.style.textShadow = "none";
+				}
+				setTimeout(() => {
+					revealContainer.style.display = "none";
+					setTimeout(() => {
+						showReveal(index + 1);
+					}, 100); // small pause between reveals
+				}, 2000); // 2 seconds per name
+			}
+		}
+		
 		function showInputScreen() {
 			document.getElementById("inputs").style.display = "flex";
 			document.getElementById("button-wrapper").style.display = "flex";
@@ -192,6 +257,54 @@
 			line-height: 60px;
 		}
 
+
+
+		#reveal-container {
+			display: none;
+			position: relative;
+			height: 50vh;
+		}
+
+		#reveal-image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 10px;
+		}
+
+		.reveal-text {
+			font-size: 3rem;
+			font-weight: bold;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 100%;
+			text-align: center;
+			pointer-events: none;
+			margin: 0;
+			padding: 0;
+		}
+
+		.reveal-white {
+			color: white;
+			text-shadow:
+				-1px -1px 0 #000,
+				 1px -1px 0 #000,
+				-1px  1px 0 #000,
+				 1px  1px 0 #000;
+		}
+
+		.reveal-black {
+			color: black;
+			text-shadow:
+				-1px -1px 0 #fff,
+				 1px -1px 0 #fff,
+				-1px  1px 0 #fff,
+				 1px  1px 0 #fff;
+		}		
+		
+		
         @keyframes blink {
             50% { opacity: 0; }
         }
@@ -213,8 +326,12 @@
 			<img src="reset.jpg" class="button-img" onclick="resetData()" alt="Reset">
 			<img src="ball.jpg" class="button-img" onclick="zamish()" alt="Zamish">
         </div>
-		<p id="processing" class="blink" style="display: none;">Zamisavan najboje sta znan...</p>
-        <div class="output-container">
+		<p id="processing" class="blink" style="display: none;">Zamisavan ...</p>
+		<div id="reveal-container" style="display: none; position: relative; height: 50vh;">
+			<img id="reveal-image" src="" alt="Reveal" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+			<div id="reveal-name" class="reveal-text"></div>
+		</div> 
+       <div class="output-container">
             <div class="column">
                 <h3>White</h3>
                 <ul id="white-list"></ul>
