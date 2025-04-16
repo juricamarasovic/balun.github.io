@@ -81,6 +81,7 @@
             
             if (inputs.length < 2) return;
             
+			document.getElementById("main-title").style.display = "none";
 			document.getElementById("inputs").style.display = "none";
 			document.getElementById("button-wrapper").style.display = "none";
 			document.getElementById("processing").style.display = "block";
@@ -129,6 +130,8 @@
 					document.getElementById("black-list").innerHTML = shuffled.slice(half).map(name => `<li>${name}</li>`).join("");
 
 					document.getElementById("back-to-input").style.display = "block";
+					document.getElementById("main-title").style.display = "block";
+					document.getElementById("main-title").textContent = "Eo podiljeno";
 					return;
 				}
 				const name = shuffled[index];
@@ -328,7 +331,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>Ubacivaj imena</h2>
+        <h2 id="main-title">Ubacivaj imena</h2>
         <div class="input-container" id="inputs"></div>
         
 		<div class="button-wrapper" id="button-wrapper">
