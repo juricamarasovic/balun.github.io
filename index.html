@@ -257,7 +257,16 @@
 			line-height: 60px;
 		}
 
+		.team-title {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+		}
 
+		.team-title img {
+			height: 30px;
+		}
 
 		#reveal-container {
 			display: none;
@@ -323,8 +332,8 @@
         <div class="input-container" id="inputs"></div>
         
 		<div class="button-wrapper" id="button-wrapper">
-			<img src="reset.jpg" class="button-img" onclick="resetData()" alt="Reset">
-			<img src="ball.jpg" class="button-img" onclick="zamish()" alt="Zamish">
+			<img src="reset.png" class="button-img" onclick="resetData()" alt="Reset">
+			<img src="ball.png" class="button-img" onclick="zamish()" alt="Zamish">
         </div>
 		<p id="processing" class="blink" style="display: none;">Zamisavan ...</p>
 		<div id="reveal-container" style="display: none; position: relative; height: 50vh;">
@@ -332,15 +341,21 @@
 			<div id="reveal-name" class="reveal-text"></div>
 		</div> 
        <div class="output-container">
-            <div class="column">
-                <h3>White</h3>
-                <ul id="white-list"></ul>
-            </div>
-            <div class="column">
-                <h3>Black</h3>
-                <ul id="black-list"></ul>
-            </div>
-        </div>
+			<div class="column">
+				<h3 class="team-title">
+					<img src="white_shirt.png" alt="White Shirt">
+					White
+				</h3>
+				<ul id="white-list"></ul>
+			</div>
+			<div class="column">
+				<h3 class="team-title">
+					<img src="black_shirt.png" alt="Black Shirt">
+					Black
+				</h3>
+				<ul id="black-list"></ul>
+			</div>       
+	   </div>
 		<div id="back-to-input" style="display: none; margin-top: 20px;">
 			<button onclick="showInputScreen()" style="padding: 10px 20px; font-size: 16px;">Input</button>
 		</div>
