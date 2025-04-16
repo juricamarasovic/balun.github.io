@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Ovaj skine znakove baluna i reseta dok se vrti, a onda ih vrati nazad -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,13 +69,17 @@
 
         function zamish() {
             const inputs = [];
-            for (let i = 0; i < inputCount; i++) {
+                // Hide buttons and show "processing" text
+
+			for (let i = 0; i < inputCount; i++) {
                 const value = document.getElementById(`input${i}`).value.trim();
                 if (value) inputs.push(value);
             }
             
             if (inputs.length < 2) return;
             
+			document.getElementById("inputs").style.display = "none";
+			document.getElementById("button-wrapper").style.display = "none";
             document.getElementById("processing").style.display = "block";
             let iterations = 0;
 
@@ -87,13 +92,24 @@
                 if (iterations < 10) {
                     setTimeout(shuffleAndDisplay, 1000);
                 } else {
-                    document.getElementById("processing").style.display = "none";
+					document.getElementById("processing").style.display = "none";
+					// Keep only the output visible
+					document.getElementById("inputs").style.display = "none";
+					document.getElementById("button-wrapper").style.display = "none";
+					document.getElementById("back-to-input").style.display = "block";
                 }
             }
             shuffleAndDisplay();
         }
+		function showInputScreen() {
+			document.getElementById("inputs").style.display = "flex";
+			document.getElementById("button-wrapper").style.display = "flex";
+			document.getElementById("back-to-input").style.display = "none";
+		}
 	window.resetData = resetData;
 	window.zamish = zamish;	
+	window.showInputScreen = showInputScreen;
+
     </script>
     <style>
         body {
@@ -143,12 +159,39 @@
             width: 50px;
             margin: 10px;
         }
-        #processing {
-            font-size: 18px;
+
+		.button-wrapper, #processing {
+			width: fit-content;
+			margin: auto;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		#back-to-input {
+			display: flex;
+			justify-content: center;
+		}
+
+		#back-to-input button {
+			background-color: #007bff;
+			color: white;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+		}
+
+		#back-to-input button:hover {
+			background-color: #0056b3;
+		}
+		#processing {
+			font-size: 1.5rem;
+			height: 60px; /* adjust based on button size */
             font-weight: bold;
             color: #ff5733;
-            display: none;
-        }
+			line-height: 60px;
+		}
+
         @keyframes blink {
             50% { opacity: 0; }
         }
@@ -165,9 +208,12 @@
     <div class="container">
         <h2>Ubacivaj imena</h2>
         <div class="input-container" id="inputs"></div>
-        <img src="reset.jpg" class="button-img" onclick="resetData()" alt="Reset">
-        <img src="ball.jpg" class="button-img" onclick="zamish()" alt="Zamish">
-        <p id="processing" class="blink">Zamisavan najboje sta znan...</p>
+        
+		<div class="button-wrapper" id="button-wrapper">
+			<img src="reset.jpg" class="button-img" onclick="resetData()" alt="Reset">
+			<img src="ball.jpg" class="button-img" onclick="zamish()" alt="Zamish">
+        </div>
+		<p id="processing" class="blink" style="display: none;">Zamisavan najboje sta znan...</p>
         <div class="output-container">
             <div class="column">
                 <h3>White</h3>
@@ -178,6 +224,9 @@
                 <ul id="black-list"></ul>
             </div>
         </div>
+		<div id="back-to-input" style="display: none; margin-top: 20px;">
+			<button onclick="showInputScreen()" style="padding: 10px 20px; font-size: 16px;">Input</button>
+		</div>
     </div>
 </body>
 </html>
